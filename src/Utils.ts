@@ -1,4 +1,4 @@
-import Fields from "./Fields";
+import Fields, {Field} from "./Fields";
 import IQueryBuilderOptions from "./IQueryBuilderOptions";
 
 export default class Utils {
@@ -13,17 +13,20 @@ export default class Utils {
   }
 
   public static queryFieldsMap(fields?: Fields): string {
-    return fields
-      ? fields
-          .map(field =>
-            typeof field === "object"
-              ? `${Object.keys(field)[0]} { ${this.queryFieldsMap(
-                  Object.values(field)[0]
-                )} }`
-              : `${field}`
-          )
-          .join(", ")
-      : "";
+    switch (true) {
+      case typeof fields == 'string': return `${fields}`;
+      case Array.isArray(fields): return (fields as Array<Field>).map(field =>
+        `${this.queryFieldsMap(field)}`
+      )
+      .join(", ");
+      case typeof fields == 'object':
+        let fo = fields as object;
+        return Object.keys(fo).map((field, index) => {
+            return `${field} {${this.queryFieldsMap( Object.values(fo)[index])}}`
+          })
+          .join(", ");
+    }
+    return "";
   }
 
   // Variables map. eg: { "id": 1, "name": "Jon Doe" }
